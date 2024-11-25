@@ -10,14 +10,12 @@ import { ServiceError } from "./ServiceError";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 export type SaveOptions<T> = {
-    table: string;
     hashKey: keyof T;
     rangeKey?: keyof T;
     obj: Partial<T>;
 };
 
 export type GetOptions<T> = {
-    table: string;
     index?: string;
     scanIndexForward?: boolean;
     limit?: number;
@@ -40,11 +38,19 @@ export type DeleteOptions<H, R> = {
     rangeKeyValue?: R;
 };
 
-export abstract class AbstractService<T extends object> {
-    private dynamoDBClient = new DynamoDBClient();
+export type AbstractServiceOptions = {
+    dynamoDBClient?: DynamoDBClient;
+};
 
-    protected async save({
-        table,
+export abstract class AbstractService<T extends object> {
+    abstract tableName: string;
+    private dynamoDBClient: DynamoDBClient;
+
+    constructor(options?: AbstractServiceOptions) {
+        this.dynamoDBClient = options?.dynamoDBClient || new DynamoDBClient();
+    }
+
+    protected async _save({
         hashKey,
         rangeKey,
         obj,
@@ -56,6 +62,7 @@ export abstract class AbstractService<T extends object> {
         if (hashKeyIndex > -1) {
             properties.splice(hashKeyIndex, 1);
         }
+
         if (rangeKey) {
             const rangeKeyIndex = properties.indexOf(rangeKey as string);
             if (rangeKeyIndex > -1) {
@@ -86,7 +93,7 @@ export abstract class AbstractService<T extends object> {
             };
         }, {});
         const updateCommand = new UpdateCommand({
-            TableName: table,
+            TableName: this.tableName,
             Key: keys,
             UpdateExpression: `
                 ${updateExpression}
@@ -107,7 +114,6 @@ export abstract class AbstractService<T extends object> {
         const rangeKeyValue = obj[rangeKey as keyof T];
 
         const getParams: GetOptions<T> = {
-            table,
             hashKey,
             hashKeyValue,
         };
@@ -117,11 +123,10 @@ export abstract class AbstractService<T extends object> {
             getParams["rangeKeyValue"] = rangeKeyValue;
         }
 
-        return (await this.get(getParams))!;
+        return (await this._get(getParams))!;
     }
 
-    async query({
-        table,
+    async _query({
         index,
         scanIndexForward,
         limit,
@@ -165,12 +170,11 @@ export abstract class AbstractService<T extends object> {
         }
 
         const queryCommandInput: QueryCommandInput = {
-            TableName: table,
+            TableName: this.tableName,
             KeyConditionExpression,
             ExpressionAttributeNames,
             ExpressionAttributeValues,
-            ScanIndexForward:
-                scanIndexForward === undefined ? true : scanIndexForward,
+            ScanIndexForward: scanIndexForward,
             Limit: limit,
         };
 
@@ -194,7 +198,6 @@ export abstract class AbstractService<T extends object> {
      * @returns An array of items retrieved from the table, with range key values equal to and between the given arguments.
      */
     async queryBetween({
-        table,
         index,
         hashKey,
         hashKeyValue,
@@ -248,7 +251,7 @@ export abstract class AbstractService<T extends object> {
         }
 
         const queryCommandInput: QueryCommandInput = {
-            TableName: table,
+            TableName: this.tableName,
             KeyConditionExpression,
             ExpressionAttributeNames,
             ExpressionAttributeValues,
@@ -268,8 +271,8 @@ export abstract class AbstractService<T extends object> {
     /**
      * get(options) returns the first item.
      */
-    protected async get(options: GetOptions<T>): Promise<T | null> {
-        const items = await this.query(options);
+    protected async _get(options: GetOptions<T>): Promise<T | null> {
+        const items = await this._query(options);
 
         if (!items || items.length === 0) {
             return null;
@@ -281,11 +284,11 @@ export abstract class AbstractService<T extends object> {
     /**
      * getAll(table) returns all items.
      */
-    protected async getAll(table: string): Promise<T[]> {
-        return await this.list({ table });
+    protected async _getAll(table: string): Promise<T[]> {
+        return await this._list({ table });
     }
 
-    protected async list<T extends object>({
+    protected async _list<T extends object>({
         table,
         filters,
     }: ListOptions): Promise<T[]> {

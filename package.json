@@ -2,10 +2,17 @@
   "name": "@initd.sg/dynamodb-service",
   "version": "1.0.0",
   "description": "An abstract dynamodb service data layer.",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "build": "tsup",
+    "dynamodb": "mkdir -p docker/dynamodb && docker compose up"
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/initdsg/dynamodb-service.git"
@@ -13,13 +20,14 @@
   "keywords": [
     "dynamodb"
   ],
-  "author": "Raziman Mahathir",
+  "author": "Raziman Mahathir <raziman@initd.sg>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/initdsg/dynamodb-service/issues"
   },
   "homepage": "https://github.com/initdsg/dynamodb-service#readme",
   "devDependencies": {
+    "@faker-js/faker": "^9.2.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.3",
     "jest": "^29.7.0",

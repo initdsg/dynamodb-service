@@ -39,12 +39,14 @@ jobs:
           aws_secret_access_key = NULL
           region = ap-southeast-1
           EOF
-
-      - name: Setup DynamoDB Local
-        uses: rrainn/dynamodb-action@v2.0.1
-
       - name: Install dependencies
         run: yarn install
+
+      - name: Run dynamodb locally
+        run: yarn dynamodb &
+
+      - name: Wait for dynamodb to initialize
+        run: sleep 15
 
       - name: Run tests
         run: yarn test

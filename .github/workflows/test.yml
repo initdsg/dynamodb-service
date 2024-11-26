@@ -40,11 +40,25 @@ jobs:
           region = ap-southeast-1
           EOF
 
-      - name: Install dependencies
-        run: yarn install
 
-      - name: Setup DynamoDB Local
-        uses: rrainn/dynamodb-action@v2.0.1
+      - name: Start DynamoDB Local
+        run: |
+          docker run -d --name dynamodb-local -p 8000:8000 amazon/dynamodb-local
+
+      - name: Wait for DynamoDB to Start
+        run: |
+          for i in {1..10}; do
+            if curl -s http://localhost:8000 > /dev/null; then
+              echo "DynamoDB is up and running!"
+              break
+            fi
+            echo "Waiting for DynamoDB to start..."
+            sleep 2
+          done
+
+      - name: Verify DynamoDB Local
+        run: |
+          curl -s http://localhost:8000 | grep -q "Amazon DynamoDB" && echo "DynamoDB is running" || exit 1
 
       - name: Run tests
         timeout-minutes: 2

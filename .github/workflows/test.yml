@@ -44,7 +44,10 @@ jobs:
         run: yarn install
 
       - name: Run dynamodb locally
-        run: yarn dynamodb
+        run: yarn dynamodb &
+
+      - name: Wait for dynamodb to initialize
+        run: sleep 5
 
       - name: Run tests
         run: yarn test

@@ -45,6 +45,7 @@ jobs:
       - name: Run tests
         timeout-minutes: 2
         run: |
+          rm -rf docker
           yarn dynamodb &
           sleep 15
           yarn test

@@ -47,7 +47,7 @@ jobs:
         run: yarn dynamodb &
 
       - name: Wait for dynamodb to initialize
-        run: sleep 5
+        run: sleep 15
 
       - name: Run tests
         run: yarn test

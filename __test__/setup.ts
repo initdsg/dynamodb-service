@@ -147,8 +147,8 @@ const dynamoDBClient = new DynamoDBClient({
     region: "ap-southeast-1", // Region is required, even for local
     endpoint: "http://localhost:8000", // Local DynamoDB endpoint
     credentials: {
-        accessKeyId: "dummy", // Dummy credentials for local use
-        secretAccessKey: "dummy",
+        accessKeyId: "NULL",
+        secretAccessKey: "NULL",
     },
 });
 

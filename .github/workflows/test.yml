@@ -39,16 +39,14 @@ jobs:
           aws_secret_access_key = NULL
           region = ap-southeast-1
           EOF
+
       - name: Install dependencies
         run: yarn install
+
+      - name: Setup DynamoDB Local
+        uses: rrainn/dynamodb-action@v2.0.1
 
       - name: Run tests
         timeout-minutes: 2
         run: |
-          rm -rf docker
-          mkdir -p docker/dynamodb
-          sudo chmod 775 -R docker
-          sudo chown $USER docker -R
-          docker compose up -d
-          sleep 15
           yarn test

@@ -59,10 +59,6 @@ jobs:
           echo "DynamoDB failed to start in time." >&2
           exit 1
 
-      - name: Verify DynamoDB Local
-        run: |
-          curl -s http://localhost:8000 | grep -q "Amazon DynamoDB" && echo "DynamoDB is running" || exit 1
-
       - name: Run tests
         timeout-minutes: 2
         run: |

@@ -46,6 +46,9 @@ jobs:
         timeout-minutes: 2
         run: |
           rm -rf docker
-          yarn dynamodb &
+          mkdir -p docker/dynamodb
+          sudo chmod 775 -R docker
+          sudo chown $USER docker -R
+          docker compose up -d
           sleep 15
           yarn test

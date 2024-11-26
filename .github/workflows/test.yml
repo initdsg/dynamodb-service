@@ -42,11 +42,8 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Run dynamodb locally
-        run: yarn dynamodb &
-
-      - name: Wait for dynamodb to initialize
-        run: sleep 15
-
       - name: Run tests
-        run: yarn test
+        run: |
+          yarn dynamodb &
+          sleep 15
+          yarn test

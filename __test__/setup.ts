@@ -110,23 +110,23 @@ class TestRangeService extends AbstractService<TestRange> {
 }
 
 export function createTable() {
-    execSync(`
-        aws dynamodb create-table \
-            --table-name Test \
-            --attribute-definitions AttributeName=id,AttributeType=S \
-            --key-schema AttributeName=id,KeyType=HASH \
-            --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-            --endpoint-url http://localhost:8000
-    `);
-
-    execSync(`
-        aws dynamodb create-table \
-            --table-name TestRange \
-            --attribute-definitions AttributeName=id,AttributeType=S AttributeName=secondId,AttributeType=N \
-            --key-schema AttributeName=id,KeyType=HASH AttributeName=secondId,KeyType=RANGE\
-            --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-            --endpoint-url http://localhost:8000
-    `);
+    //execSync(`
+    //    aws dynamodb create-table \
+    //        --table-name Test \
+    //        --attribute-definitions AttributeName=id,AttributeType=S \
+    //        --key-schema AttributeName=id,KeyType=HASH \
+    //        --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
+    //        --endpoint-url http://localhost:8000
+    //`);
+    //
+    //execSync(`
+    //    aws dynamodb create-table \
+    //        --table-name TestRange \
+    //        --attribute-definitions AttributeName=id,AttributeType=S AttributeName=secondId,AttributeType=N \
+    //        --key-schema AttributeName=id,KeyType=HASH AttributeName=secondId,KeyType=RANGE\
+    //        --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
+    //        --endpoint-url http://localhost:8000
+    //`);
 }
 
 export function deleteTable() {

@@ -24,11 +24,25 @@ class TestService extends AbstractService<Test> {
             hashKeyValue: id,
         });
     }
+
+    async delete(id: string) {
+        return await this._delete({
+            hashKey: "id",
+            hashKeyValue: id,
+        });
+    }
+
+    async list(name: string, limit = 100) {
+        return await this._list({
+            filters: { name },
+            limit,
+        });
+    }
 }
 
 export interface TestRange {
     id: string; // hash key
-    secondId: string; // range key
+    secondId: number; // range key
     name: string;
 }
 
@@ -43,15 +57,43 @@ class TestRangeService extends AbstractService<TestRange> {
         });
     }
 
-    async get(id: string) {
+    async get(id: string, secondId?: number) {
+        if (secondId) {
+            return await this._get({
+                hashKey: "id",
+                hashKeyValue: id,
+                rangeKey: "secondId",
+                rangeKeyValue: secondId,
+            });
+        }
+
         return await this._get({
             hashKey: "id",
             hashKeyValue: id,
         });
     }
 
-    async getWithRange(id: string, secondId: string) {
-        return await this._get({
+    async query(id: string, order?: "asc" | "dsc", limit?: number) {
+        return await this._query({
+            hashKey: "id",
+            hashKeyValue: id,
+            order,
+            limit,
+        });
+    }
+
+    async queryBetween(id: string, min: number, max: number) {
+        return await this._queryBetween({
+            hashKey: "id",
+            hashKeyValue: id,
+            rangeKey: "secondId",
+            rangeKeyStartValue: min,
+            rangeKeyEndValue: max,
+        });
+    }
+
+    async delete(id: string, secondId: number) {
+        return await this._delete({
             hashKey: "id",
             hashKeyValue: id,
             rangeKey: "secondId",
@@ -59,11 +101,10 @@ class TestRangeService extends AbstractService<TestRange> {
         });
     }
 
-    async query(id: string, order?: "asc" | "dsc") {
-        return await this._query({
-            hashKey: "id",
-            hashKeyValue: id,
-            order,
+    async list(name: string, limit = 100) {
+        return await this._list({
+            filters: { name },
+            limit,
         });
     }
 }
@@ -81,7 +122,7 @@ export function createTable() {
     execSync(`
         aws dynamodb create-table \
             --table-name TestRange \
-            --attribute-definitions AttributeName=id,AttributeType=S AttributeName=secondId,AttributeType=S \
+            --attribute-definitions AttributeName=id,AttributeType=S AttributeName=secondId,AttributeType=N \
             --key-schema AttributeName=id,KeyType=HASH AttributeName=secondId,KeyType=RANGE\
             --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
             --endpoint-url http://localhost:8000
@@ -122,7 +163,7 @@ export function setup() {
 
     const testRangeModel: TestRange = {
         id: faker.string.uuid(),
-        secondId: faker.string.uuid(),
+        secondId: faker.number.int(),
         name: faker.person.fullName(),
     };
 

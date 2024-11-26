@@ -26,6 +26,7 @@ export type GetOptions<T> = {
 };
 
 export type ListOptions = {
+    limit?: number;
     filters?: Record<string, any>;
 };
 
@@ -172,9 +173,12 @@ export abstract class AbstractService<T extends object> {
             KeyConditionExpression,
             ExpressionAttributeNames,
             ExpressionAttributeValues,
-            ScanIndexForward: order === "asc",
             Limit: limit,
         };
+
+        if (order) {
+            queryCommandInput.ScanIndexForward = order === "asc";
+        }
 
         if (index) {
             queryCommandInput.IndexName = index;
@@ -195,7 +199,7 @@ export abstract class AbstractService<T extends object> {
      * @param param0 Same as GetOptions, but the rangeKeyValue is replaced by rangeKeyStartValue and rangeKeyEndValue.
      * @returns An array of items retrieved from the table, with range key values equal to and between the given arguments.
      */
-    async queryBetween({
+    async _queryBetween({
         index,
         hashKey,
         hashKeyValue,
@@ -282,15 +286,14 @@ export abstract class AbstractService<T extends object> {
     /**
      * getAll(table) returns all items.
      */
-    protected async _getAll(): Promise<T[]> {
+    public async getAll(): Promise<T[]> {
         return await this._list({});
     }
 
-    protected async _list<T extends object>({
-        filters,
-    }: ListOptions): Promise<T[]> {
+    protected async _list({ filters, limit }: ListOptions): Promise<T[]> {
         const scanCommandParams: ScanCommandInput = {
             TableName: this.tableName,
+            Limit: limit,
         };
 
         if (filters && Object.keys(filters).length > 0) {
@@ -317,18 +320,33 @@ export abstract class AbstractService<T extends object> {
 
         const scanCommand = new ScanCommand(scanCommandParams);
         const results: T[] = [];
+
         do {
             const { Items, LastEvaluatedKey } =
                 await this.dynamoDBClient.send(scanCommand);
+
             if (Items) {
-                results.push(...(Items as T[]));
+                const items = Items as T[];
+                results.push(...items);
             }
+
+            if (limit) {
+                if (results.length > limit) {
+                    results.splice(0, limit);
+                }
+
+                if (results.length >= limit) {
+                    break;
+                }
+            }
+
             scanCommand.input.ExclusiveStartKey = LastEvaluatedKey;
         } while (scanCommand.input.ExclusiveStartKey);
+
         return results;
     }
 
-    protected async delete<H, R>({
+    protected async _delete<H, R>({
         hashKey,
         hashKeyValue,
         rangeKey,

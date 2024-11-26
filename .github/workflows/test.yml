@@ -20,16 +20,8 @@ jobs:
       image: node:${{ matrix.node-version }}
 
     steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Install AWS cli
         run: |
@@ -48,7 +40,9 @@ jobs:
         run: yarn install
 
       - name: Run dynamodb locally
-        run: yarn dynamodb &
+        run: |
+          mkdir -p docker/dynamodb
+          docker compose up -d
 
       - name: Run tests
         run: yarn test

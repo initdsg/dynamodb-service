@@ -17,7 +17,7 @@ export type SaveOptions<T> = {
 
 export type GetOptions<T> = {
     index?: string;
-    scanIndexForward?: boolean;
+    order?: "asc" | "dsc";
     limit?: number;
     hashKey: keyof T;
     hashKeyValue: unknown;
@@ -26,12 +26,10 @@ export type GetOptions<T> = {
 };
 
 export type ListOptions = {
-    table: string;
     filters?: Record<string, any>;
 };
 
 export type DeleteOptions<H, R> = {
-    table: string;
     hashKey: string;
     hashKeyValue: H;
     rangeKey?: string;
@@ -128,7 +126,7 @@ export abstract class AbstractService<T extends object> {
 
     async _query({
         index,
-        scanIndexForward,
+        order,
         limit,
         hashKey,
         hashKeyValue,
@@ -174,7 +172,7 @@ export abstract class AbstractService<T extends object> {
             KeyConditionExpression,
             ExpressionAttributeNames,
             ExpressionAttributeValues,
-            ScanIndexForward: scanIndexForward,
+            ScanIndexForward: order === "asc",
             Limit: limit,
         };
 
@@ -284,16 +282,15 @@ export abstract class AbstractService<T extends object> {
     /**
      * getAll(table) returns all items.
      */
-    protected async _getAll(table: string): Promise<T[]> {
-        return await this._list({ table });
+    protected async _getAll(): Promise<T[]> {
+        return await this._list({});
     }
 
     protected async _list<T extends object>({
-        table,
         filters,
     }: ListOptions): Promise<T[]> {
         const scanCommandParams: ScanCommandInput = {
-            TableName: table,
+            TableName: this.tableName,
         };
 
         if (filters && Object.keys(filters).length > 0) {
@@ -332,7 +329,6 @@ export abstract class AbstractService<T extends object> {
     }
 
     protected async delete<H, R>({
-        table,
         hashKey,
         hashKeyValue,
         rangeKey,
@@ -346,7 +342,7 @@ export abstract class AbstractService<T extends object> {
         }
 
         const deleteCommand = new DeleteCommand({
-            TableName: table,
+            TableName: this.tableName,
             Key: keys,
         });
         await this.dynamoDBClient.send(deleteCommand);

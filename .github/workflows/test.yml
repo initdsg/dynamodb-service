@@ -12,6 +12,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      dynamodb:
+        image: amazon/dynamodb-local:latest
+        ports:
+          - 8000:8000
+
     strategy:
       matrix:
         node-version: [18, 20]
@@ -42,12 +48,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-
-      - name: Run dynamodb locally
-        run: yarn dynamodb &
-
-      - name: Wait for dynamodb to initialize
-        run: sleep 15
 
       - name: Run tests
         run: yarn test

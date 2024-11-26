@@ -44,9 +44,7 @@ jobs:
         run: yarn install
 
       - name: Run dynamodb locally
-        run: |
-          mkdir -p docker/dynamodb
-          docker compose up -d
+        run: yarn dynamodb
 
       - name: Run tests
         run: yarn test

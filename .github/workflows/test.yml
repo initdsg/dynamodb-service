@@ -25,22 +25,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install AWS cli
-        run: |
-          # delete preexisting one
-          sudo rm -rf /usr/local/aws-cli
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install
-          mkdir -p ~/.aws
-          cat >> ~/.aws/credentials << EOF
-          [default]
-          aws_access_key_id = NULL
-          aws_secret_access_key = NULL
-          region = ap-southeast-1
-          EOF
-
-
       - name: Start DynamoDB Local
         run: |
           docker run -d --name dynamodb-local -p 8000:8000 amazon/dynamodb-local

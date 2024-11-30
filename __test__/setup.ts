@@ -8,6 +8,7 @@ import { faker } from "@faker-js/faker";
 
 export interface Test {
     id: string; // hash key
+    secondId: string; // index primary key
     name: string;
 }
 
@@ -25,6 +26,14 @@ class TestService extends AbstractService<Test> {
         return await this._get({
             hashKey: "id",
             hashKeyValue: id,
+        });
+    }
+
+    async getBySecondId(secondId: string) {
+        return await this._get({
+            index: "TestIndex",
+            hashKey: "secondId",
+            hashKeyValue: secondId,
         });
     }
 
@@ -52,7 +61,7 @@ export interface TestRange {
 class TestRangeService extends AbstractService<TestRange> {
     tableName = "TestRange";
 
-    async save(sample: Test) {
+    async save(sample: TestRange) {
         return await this._save({
             hashKey: "id",
             rangeKey: "secondId",
@@ -129,11 +138,33 @@ export async function createTestTable() {
                 AttributeName: "id",
                 AttributeType: "S",
             },
+            {
+                AttributeName: "secondId",
+                AttributeType: "S",
+            },
         ],
         KeySchema: [
             {
                 AttributeName: "id",
                 KeyType: "HASH",
+            },
+        ],
+        GlobalSecondaryIndexes: [
+            {
+                IndexName: "TestIndex",
+                KeySchema: [
+                    {
+                        AttributeName: "secondId",
+                        KeyType: "HASH",
+                    },
+                ],
+                Projection: {
+                    ProjectionType: "ALL",
+                },
+                ProvisionedThroughput: {
+                    ReadCapacityUnits: 1,
+                    WriteCapacityUnits: 1,
+                },
             },
         ],
         ProvisionedThroughput: {
@@ -199,6 +230,7 @@ export const testRangeService = new TestRangeService({ dynamoDBClient });
 export function setup() {
     const testModel: Test = {
         id: faker.string.uuid(),
+        secondId: faker.string.uuid(),
         name: faker.person.fullName(),
     };
 

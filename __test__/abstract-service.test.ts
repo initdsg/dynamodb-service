@@ -134,6 +134,18 @@ describe("TestTable", () => {
     });
 });
 
+describe("TestTableIndex", () => {
+    it("_get(): should get object from GSI", async () => {
+        const { testModel } = setup();
+
+        await testService.save(testModel);
+
+        const result = await testService.getBySecondId(testModel.secondId);
+
+        expect(result).toEqual(expect.objectContaining(testModel));
+    });
+});
+
 describe("TestRangeTable", () => {
     it("_save(): should save object", async () => {
         const { testRangeModel } = setup();

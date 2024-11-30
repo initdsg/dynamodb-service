@@ -2,18 +2,22 @@ import { faker } from "@faker-js/faker";
 import {
     testService,
     setup,
-    createTable,
-    deleteTable,
+    createTestTable,
+    createTestRangeTable,
+    deleteTestTable,
+    deleteTestRangeTable,
     testRangeService,
     TestRange,
 } from "./setup";
 
-beforeAll(() => {
-    createTable();
+beforeAll(async () => {
+    await createTestTable();
+    await createTestRangeTable();
 });
 
-afterAll(() => {
-    deleteTable();
+afterAll(async () => {
+    await deleteTestTable();
+    await deleteTestRangeTable();
 });
 
 describe("TestTable", () => {

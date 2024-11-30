@@ -1,5 +1,8 @@
-import { execSync } from "child_process";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+    CreateTableCommand,
+    DeleteTableCommand,
+    DynamoDBClient,
+} from "@aws-sdk/client-dynamodb";
 import { AbstractService } from "../src/AbstractService";
 import { faker } from "@faker-js/faker";
 
@@ -109,40 +112,6 @@ class TestRangeService extends AbstractService<TestRange> {
     }
 }
 
-export function createTable() {
-    execSync(`
-        aws dynamodb create-table \
-            --table-name Test \
-            --attribute-definitions AttributeName=id,AttributeType=S \
-            --key-schema AttributeName=id,KeyType=HASH \
-            --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-            --endpoint-url http://localhost:8000
-    `);
-
-    execSync(`
-        aws dynamodb create-table \
-            --table-name TestRange \
-            --attribute-definitions AttributeName=id,AttributeType=S AttributeName=secondId,AttributeType=N \
-            --key-schema AttributeName=id,KeyType=HASH AttributeName=secondId,KeyType=RANGE\
-            --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-            --endpoint-url http://localhost:8000
-    `);
-}
-
-export function deleteTable() {
-    execSync(`
-        aws dynamodb delete-table \
-            --table-name Test \
-            --endpoint-url http://localhost:8000
-    `);
-
-    execSync(`
-        aws dynamodb delete-table \
-            --table-name TestRange \
-            --endpoint-url http://localhost:8000
-    `);
-}
-
 const dynamoDBClient = new DynamoDBClient({
     region: "ap-southeast-1", // Region is required, even for local
     endpoint: "http://localhost:8000", // Local DynamoDB endpoint
@@ -151,6 +120,78 @@ const dynamoDBClient = new DynamoDBClient({
         secretAccessKey: "NULL",
     },
 });
+
+export async function createTestTable() {
+    const command = new CreateTableCommand({
+        TableName: "Test",
+        AttributeDefinitions: [
+            {
+                AttributeName: "id",
+                AttributeType: "S",
+            },
+        ],
+        KeySchema: [
+            {
+                AttributeName: "id",
+                KeyType: "HASH",
+            },
+        ],
+        ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1,
+        },
+    });
+
+    await dynamoDBClient.send(command);
+}
+
+export async function createTestRangeTable() {
+    const command = new CreateTableCommand({
+        TableName: "TestRange",
+        AttributeDefinitions: [
+            {
+                AttributeName: "id",
+                AttributeType: "S",
+            },
+            {
+                AttributeName: "secondId",
+                AttributeType: "N",
+            },
+        ],
+        KeySchema: [
+            {
+                AttributeName: "id",
+                KeyType: "HASH",
+            },
+            {
+                AttributeName: "secondId",
+                KeyType: "RANGE",
+            },
+        ],
+        ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1,
+        },
+    });
+
+    await dynamoDBClient.send(command);
+}
+
+export async function deleteTestTable() {
+    const command = new DeleteTableCommand({
+        TableName: "Test",
+    });
+
+    await dynamoDBClient.send(command);
+}
+
+export async function deleteTestRangeTable() {
+    const command = new DeleteTableCommand({
+        TableName: "TestRange",
+    });
+
+    await dynamoDBClient.send(command);
+}
 
 export const testService = new TestService({ dynamoDBClient });
 export const testRangeService = new TestRangeService({ dynamoDBClient });

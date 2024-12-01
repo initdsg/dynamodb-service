@@ -8,6 +8,7 @@ import {
     deleteTestRangeTable,
     testRangeService,
     TestRange,
+    Test,
 } from "./setup";
 
 beforeAll(async () => {
@@ -50,6 +51,25 @@ describe("TestTable", () => {
         const result = await testService.get(testModel.id);
 
         expect(result).toEqual(testModel);
+    });
+
+    it("_batchGet(): should batch get objects", async () => {
+        const { testModel } = setup();
+        const models: Test[] = [];
+
+        // fill with 200 items
+        for (let i = 0; i < 200; i++) {
+            const model = { ...testModel, id: faker.string.uuid() };
+            models.push(model);
+
+            await testService.save(model);
+        }
+
+        const ids = models.map((model) => model.id);
+        const result = await testService.batchGet(ids);
+
+        expect(result.length).toEqual(models.length);
+        expect(result).toEqual(expect.arrayContaining(models));
     });
 
     it("_delete(): should delete object", async () => {
@@ -196,6 +216,27 @@ describe("TestRangeTable", () => {
         );
 
         expect(result).toEqual(randomTestRangeModel);
+    });
+
+    it("_batchGet(): should batch get objects", async () => {
+        const { testRangeModel } = setup();
+        const models: TestRange[] = [];
+
+        // fill with 200 items
+        for (let i = 0; i < 200; i++) {
+            const model = { ...testRangeModel, id: faker.string.uuid() };
+            models.push(model);
+
+            await testRangeService.save(model);
+        }
+
+        const ids = models.map(
+            (model) => [model.id, model.secondId] as [string, number]
+        );
+        const result = await testRangeService.batchGet(ids);
+
+        expect(result.length).toEqual(models.length);
+        expect(result).toEqual(expect.arrayContaining(models));
     });
 
     it("_query(): should get objects in descending order", async () => {

@@ -29,6 +29,15 @@ class TestService extends AbstractService<Test> {
         });
     }
 
+    async batchGet(ids: string[]) {
+        return await this._batchGet({
+            items: ids.map((id) => ({
+                hashKey: "id",
+                hashKeyValue: id,
+            })),
+        });
+    }
+
     async getBySecondId(secondId: string) {
         return await this._get({
             index: "TestIndex",
@@ -75,6 +84,17 @@ class TestRangeService extends AbstractService<TestRange> {
             hashKeyValue: id,
             rangeKey: "secondId",
             rangeKeyValue: secondId,
+        });
+    }
+
+    async batchGet(ids: [string, number][]) {
+        return await this._batchGet({
+            items: ids.map((id) => ({
+                hashKey: "id",
+                hashKeyValue: id[0],
+                rangeKey: "secondId",
+                rangeKeyValue: id[1],
+            })),
         });
     }
 

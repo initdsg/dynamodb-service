@@ -1,4 +1,6 @@
 import {
+    BatchGetCommand,
+    BatchGetCommandInput,
     DeleteCommand,
     GetCommand,
     GetCommandInput,
@@ -10,6 +12,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { ServiceError } from "./ServiceError";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { chunk } from "./utils";
 
 export type SaveOptions<T> = {
     hashKey: keyof T;
@@ -25,6 +28,15 @@ export type GetOptions<T> = {
     hashKeyValue: unknown;
     rangeKey?: keyof T;
     rangeKeyValue?: unknown;
+};
+
+export type BatchGetOptions<T> = {
+    items: {
+        hashKey: keyof T;
+        hashKeyValue: unknown;
+        rangeKey?: keyof T;
+        rangeKeyValue?: unknown;
+    }[];
 };
 
 export type ListOptions = {
@@ -282,6 +294,43 @@ export abstract class AbstractService<T extends object> {
         const { Item } = await this.dynamoDBClient.send(command);
 
         return (Item as T) || null;
+    }
+
+    protected async _batchGet(options: BatchGetOptions<T>): Promise<T[]> {
+        const items = options.items.map((item) => {
+            const keys: Record<string, unknown> = {
+                [item.hashKey as string]: item.hashKeyValue,
+            };
+
+            if (item.rangeKey && item.rangeKeyValue) {
+                keys[item.rangeKey as string] = item.rangeKeyValue;
+            }
+
+            return keys;
+        });
+
+        const chunks = chunk(items, 100);
+
+        const results: T[] = [];
+
+        for (const chunk of chunks) {
+            const batchGetCommandInput: BatchGetCommandInput = {
+                RequestItems: {
+                    [this.tableName]: {
+                        Keys: chunk,
+                    },
+                },
+            };
+            const batchGetCommand = new BatchGetCommand(batchGetCommandInput);
+            const result = await this.dynamoDBClient.send(batchGetCommand);
+
+            if (result.Responses) {
+                const items = result.Responses[this.tableName] as T[];
+                results.push(...items);
+            }
+        }
+
+        return results;
     }
 
     /**

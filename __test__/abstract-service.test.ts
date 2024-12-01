@@ -39,7 +39,7 @@ describe("TestTable", () => {
 
         const result = await testService.save(testModel);
 
-        expect(result).toEqual(expect.objectContaining(testModel));
+        expect(result).toEqual(testModel);
     });
 
     it("_get(): should get object", async () => {
@@ -49,7 +49,7 @@ describe("TestTable", () => {
 
         const result = await testService.get(testModel.id);
 
-        expect(result).toEqual(expect.objectContaining(testModel));
+        expect(result).toEqual(testModel);
     });
 
     it("_delete(): should delete object", async () => {
@@ -59,7 +59,7 @@ describe("TestTable", () => {
 
         const result = await testService.get(testModel.id);
 
-        expect(result).toEqual(expect.objectContaining(testModel));
+        expect(result).toEqual(testModel);
 
         await testService.delete(testModel.id);
 
@@ -86,7 +86,7 @@ describe("TestTable", () => {
         const result = await testService.list(testModel.name);
 
         expect(result.length).toEqual(1);
-        expect(result[0]).toEqual(expect.objectContaining(testModel));
+        expect(result[0]).toEqual(testModel);
     });
 
     it("_list(): should find matching objects with same field value", async () => {
@@ -142,7 +142,7 @@ describe("TestTableIndex", () => {
 
         const result = await testService.getBySecondId(testModel.secondId);
 
-        expect(result).toEqual(expect.objectContaining(testModel));
+        expect(result).toEqual(testModel);
     });
 });
 
@@ -152,7 +152,7 @@ describe("TestRangeTable", () => {
 
         const result = await testRangeService.save(testRangeModel);
 
-        expect(result).toEqual(expect.objectContaining(testRangeModel));
+        expect(result).toEqual(testRangeModel);
     });
 
     it("_delete(): should delete object", async () => {
@@ -165,7 +165,7 @@ describe("TestRangeTable", () => {
             testRangeModel.secondId
         );
 
-        expect(result).toEqual(expect.objectContaining(testRangeModel));
+        expect(result).toEqual(testRangeModel);
 
         await testRangeService.delete(
             testRangeModel.id,
@@ -195,7 +195,7 @@ describe("TestRangeTable", () => {
             randomTestRangeModel.secondId
         );
 
-        expect(result).toEqual(expect.objectContaining(randomTestRangeModel));
+        expect(result).toEqual(randomTestRangeModel);
     });
 
     it("_query(): should get objects in descending order", async () => {
@@ -219,7 +219,7 @@ describe("TestRangeTable", () => {
             const result = results[i];
             const testRangeModel = testRangeModels[i];
 
-            expect(result).toEqual(expect.objectContaining(testRangeModel));
+            expect(result).toEqual(testRangeModel);
         }
     });
 
@@ -241,7 +241,7 @@ describe("TestRangeTable", () => {
             const result = results[i];
             const testRangeModel = testRangeModels[i];
 
-            expect(result).toEqual(expect.objectContaining(testRangeModel));
+            expect(result).toEqual(testRangeModel);
         }
     });
 
@@ -263,7 +263,7 @@ describe("TestRangeTable", () => {
             const result = results[i];
             const testRangeModel = testRangeModels[i];
 
-            expect(result).toEqual(expect.objectContaining(testRangeModel));
+            expect(result).toEqual(testRangeModel);
         }
     });
 
@@ -290,7 +290,7 @@ describe("TestRangeTable", () => {
             const result = results[i];
             const testRangeModel = testRangeModels[i];
 
-            expect(result).toEqual(expect.objectContaining(testRangeModel));
+            expect(result).toEqual(testRangeModel);
         }
     });
 
@@ -319,7 +319,7 @@ describe("TestRangeTable", () => {
             const result = results[i];
             const testRangeModel = selectedRangeModels[i];
 
-            expect(result).toEqual(expect.objectContaining(testRangeModel));
+            expect(result).toEqual(testRangeModel);
         }
     });
 
@@ -343,7 +343,7 @@ describe("TestRangeTable", () => {
         const result = await testRangeService.list(testRangeModel.name);
 
         expect(result.length).toEqual(1);
-        expect(result[0]).toEqual(expect.objectContaining(testRangeModel));
+        expect(result[0]).toEqual(testRangeModel);
     });
 
     it("_list(): should find matching objects with same field value", async () => {

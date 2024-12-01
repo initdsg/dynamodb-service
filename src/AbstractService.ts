@@ -71,10 +71,9 @@ export abstract class AbstractService<T extends object> {
             }
         }
 
-        const updateExpression = properties.reduce(
-            (acc, property) => `${acc} #${property} = :${property},`,
-            "SET"
-        );
+        const updateExpression = properties
+            .map((property) => `#${property} = :${property}`)
+            .join(",");
 
         const keys = {
             [hashKey as string]: obj[hashKey as keyof T],
@@ -101,18 +100,9 @@ export abstract class AbstractService<T extends object> {
         const updateCommand = new UpdateCommand({
             TableName: this.tableName,
             Key: keys,
-            UpdateExpression: `
-                ${updateExpression}
-                #lastUpdated = :lastUpdated
-            `,
-            ExpressionAttributeNames: {
-                ...expressionAttributeNames,
-                "#lastUpdated": "lastUpdated",
-            },
-            ExpressionAttributeValues: {
-                ...expressionAttributeValues,
-                ":lastUpdated": new Date().getTime(),
-            },
+            UpdateExpression: `SET ${updateExpression}`,
+            ExpressionAttributeNames: expressionAttributeNames,
+            ExpressionAttributeValues: expressionAttributeValues,
             ReturnValues: "ALL_NEW",
         });
 

@@ -63,6 +63,11 @@ export abstract class AbstractService<T extends object> {
         this.dynamoDBClient = options?.dynamoDBClient || new DynamoDBClient();
     }
 
+    /**
+     * Saves an item to the table. This method creates a new item if it does not
+     * exist, or updates an existing item. The update can be done partially,
+     * where only the provided attributes are updated.
+     */
     protected async _save({
         hashKey,
         rangeKey,
@@ -124,6 +129,11 @@ export abstract class AbstractService<T extends object> {
         return item as T;
     }
 
+    /**
+     * A more generic method to query a table. This method allows you to query
+     * a table based on the hash key and range key. This method will if range
+     * key is not provided for table with range key.
+     */
     async _query({
         index,
         order,
@@ -192,11 +202,10 @@ export abstract class AbstractService<T extends object> {
 
     /**
      * Queries a Table according to a start and end value for the range key.
-     * Start and end inclusive. You can fetch a single item by providing identical values for the start and end values.
-     * The hash key must be provided.
-     * Throws an error if the start value is larger than the end value when compared with '>'.
-     * @param param0 Same as GetOptions, but the rangeKeyValue is replaced by rangeKeyStartValue and rangeKeyEndValue.
-     * @returns An array of items retrieved from the table, with range key values equal to and between the given arguments.
+     * Start and end inclusive. You can fetch a single item by providing
+     * identical values for the start and end values. The hash key must be
+     * provided. Throws an error if the start value is larger than the end value
+     * when compared with '>'.
      */
     async _queryBetween({
         index,
@@ -270,7 +279,10 @@ export abstract class AbstractService<T extends object> {
     }
 
     /**
-     * get(options) returns the first item.
+     * Fetches a single item from the table. This method is performant 0(1) as
+     * it uses the `GetItem` API call (not for index since `GetItem` does not
+     * work on indexes). `_get()` will throw an error if range key is not
+     * provided for table with range key specified.
      */
     protected async _get(options: GetOptions<T>): Promise<T | null> {
         if (options.index) {
@@ -300,6 +312,11 @@ export abstract class AbstractService<T extends object> {
         return (Item as T) || null;
     }
 
+    /**
+     * Fetches multiple items from the table. This method is optimized in which
+     * every 100 keys are batched under a single dynamodb request thus reducing
+     * the number of calls to dynamodb.
+     */
     protected async _batchGet(options: BatchGetOptions<T>): Promise<T[]> {
         const items = options.items.map((item) => {
             const keys: Record<string, unknown> = {
@@ -313,7 +330,8 @@ export abstract class AbstractService<T extends object> {
             return keys;
         });
 
-        const chunks = chunk(items, 100);
+        const LIMIT = 100; // DynamoDB limit
+        const chunks = chunk(items, LIMIT);
 
         const results: T[] = [];
 
@@ -338,12 +356,17 @@ export abstract class AbstractService<T extends object> {
     }
 
     /**
-     * getAll(table) returns all items.
+     * A simple method to get everything from the table. Use `_list()` under the
+     * hood.
      */
     public async getAll(): Promise<T[]> {
         return await this._list({});
     }
 
+    /**
+     * Method to list items from the table. It's using
+     * `ScanCommand` which can be expensive for large table.
+     */
     protected async _list({ filters, limit }: ListOptions): Promise<T[]> {
         const scanCommandParams: ScanCommandInput = {
             TableName: this.tableName,
@@ -400,6 +423,9 @@ export abstract class AbstractService<T extends object> {
         return results;
     }
 
+    /**
+     * Deletes entry from the table.
+     */
     protected async _delete<H, R>({
         hashKey,
         hashKeyValue,

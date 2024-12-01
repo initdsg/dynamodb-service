@@ -106,23 +106,13 @@ export abstract class AbstractService<T extends object> {
                 ...expressionAttributeValues,
                 ":lastUpdated": new Date().getTime(),
             },
+            ReturnValues: "ALL_NEW",
         });
-        await this.dynamoDBClient.send(updateCommand);
 
-        const hashKeyValue = obj[hashKey as keyof T];
-        const rangeKeyValue = obj[rangeKey as keyof T];
+        const { Attributes: item } =
+            await this.dynamoDBClient.send(updateCommand);
 
-        const getParams: GetOptions<T> = {
-            hashKey,
-            hashKeyValue,
-        };
-
-        if (rangeKey && rangeKeyValue) {
-            getParams["rangeKey"] = rangeKey;
-            getParams["rangeKeyValue"] = rangeKeyValue;
-        }
-
-        return (await this._get(getParams))!;
+        return item as T;
     }
 
     async _query({

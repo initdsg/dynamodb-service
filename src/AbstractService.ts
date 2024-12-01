@@ -73,24 +73,29 @@ export abstract class AbstractService<T extends object> {
             (acc, property) => `${acc} #${property} = :${property},`,
             "SET"
         );
+
         const keys = {
             [hashKey as string]: obj[hashKey as keyof T],
         };
+
         if (rangeKey) {
             keys[rangeKey as string] = obj[rangeKey as keyof T];
         }
+
         const expressionAttributeNames = properties.reduce((acc, property) => {
             return {
                 ...acc,
                 [`#${property}`]: property,
             };
         }, {});
+
         const expressionAttributeValues = properties.reduce((acc, property) => {
             return {
                 ...acc,
                 [`:${property}`]: obj[property as keyof T],
             };
         }, {});
+
         const updateCommand = new UpdateCommand({
             TableName: this.tableName,
             Key: keys,

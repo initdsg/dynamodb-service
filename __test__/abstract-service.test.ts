@@ -43,6 +43,17 @@ describe("TestTable", () => {
         expect(result).toEqual(testModel);
     });
 
+    it("_save(): should update object", async () => {
+        const { testModel } = setup();
+
+        const result = await testService.save(testModel);
+        expect(result).toEqual(testModel);
+
+        testModel.name = faker.person.fullName();
+
+        expect(testService.save(testModel)).resolves.toEqual(testModel);
+    });
+
     it("_get(): should get object", async () => {
         const { testModel } = setup();
 
@@ -173,6 +184,19 @@ describe("TestRangeTable", () => {
         const result = await testRangeService.save(testRangeModel);
 
         expect(result).toEqual(testRangeModel);
+    });
+
+    it("_save(): should update object", async () => {
+        const { testRangeModel } = setup();
+
+        const result = await testRangeService.save(testRangeModel);
+        expect(result).toEqual(testRangeModel);
+
+        testRangeModel.name = faker.person.fullName();
+
+        expect(testRangeService.save(testRangeModel)).resolves.toEqual(
+            testRangeModel
+        );
     });
 
     it("_delete(): should delete object", async () => {

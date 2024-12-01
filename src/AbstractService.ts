@@ -1,5 +1,7 @@
 import {
     DeleteCommand,
+    GetCommand,
+    GetCommandInput,
     QueryCommand,
     QueryCommandInput,
     ScanCommand,
@@ -269,13 +271,27 @@ export abstract class AbstractService<T extends object> {
      * get(options) returns the first item.
      */
     protected async _get(options: GetOptions<T>): Promise<T | null> {
-        const items = await this._query(options);
-
-        if (!items || items.length === 0) {
-            return null;
+        if (options.index) {
+            const item = await this._query(options);
+            return item[0] || null;
         }
 
-        return items[0] as T;
+        const getCommandInput: GetCommandInput = {
+            TableName: this.tableName,
+            Key: {
+                [options.hashKey as string]: options.hashKeyValue,
+            },
+        };
+
+        if (options.rangeKey && options.rangeKeyValue) {
+            getCommandInput.Key![options.rangeKey as string] =
+                options.rangeKeyValue;
+        }
+
+        const command = new GetCommand(getCommandInput);
+        const { Item } = await this.dynamoDBClient.send(command);
+
+        return (Item as T) || null;
     }
 
     /**

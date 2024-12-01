@@ -155,16 +155,6 @@ describe("TestRangeTable", () => {
         expect(result).toEqual(expect.objectContaining(testRangeModel));
     });
 
-    it("_get(): should get object", async () => {
-        const { testRangeModel } = setup();
-
-        await testRangeService.save(testRangeModel);
-
-        const result = await testRangeService.get(testRangeModel.id);
-
-        expect(result).toEqual(expect.objectContaining(testRangeModel));
-    });
-
     it("_delete(): should delete object", async () => {
         const { testRangeModel } = setup();
 

@@ -69,19 +69,12 @@ class TestRangeService extends AbstractService<TestRange> {
         });
     }
 
-    async get(id: string, secondId?: number) {
-        if (secondId) {
-            return await this._get({
-                hashKey: "id",
-                hashKeyValue: id,
-                rangeKey: "secondId",
-                rangeKeyValue: secondId,
-            });
-        }
-
+    async get(id: string, secondId: number) {
         return await this._get({
             hashKey: "id",
             hashKeyValue: id,
+            rangeKey: "secondId",
+            rangeKeyValue: secondId,
         });
     }
 

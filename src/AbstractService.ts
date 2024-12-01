@@ -285,8 +285,12 @@ export abstract class AbstractService<T extends object> {
             },
         };
 
-        if (options.rangeKey && options.rangeKeyValue) {
-            getCommandInput.Key![options.rangeKey as string] =
+        // loose check using == because options.rangeKey can be null or undefined
+        if (
+            options.rangeKey != undefined &&
+            options.rangeKeyValue != undefined
+        ) {
+            getCommandInput.Key![options.rangeKey.toString()] =
                 options.rangeKeyValue;
         }
 

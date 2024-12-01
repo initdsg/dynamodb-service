@@ -81,7 +81,7 @@ export abstract class AbstractService<T extends object> {
             properties.splice(hashKeyIndex, 1);
         }
 
-        if (rangeKey) {
+        if (rangeKey != undefined) {
             const rangeKeyIndex = properties.indexOf(rangeKey as string);
             if (rangeKeyIndex > -1) {
                 properties.splice(rangeKeyIndex, 1);
@@ -93,11 +93,11 @@ export abstract class AbstractService<T extends object> {
             .join(",");
 
         const keys = {
-            [hashKey as string]: obj[hashKey as keyof T],
+            [hashKey.toString()]: obj[hashKey as keyof T],
         };
 
-        if (rangeKey) {
-            keys[rangeKey as string] = obj[rangeKey as keyof T];
+        if (rangeKey != undefined) {
+            keys[rangeKey.toString()] = obj[rangeKey as keyof T];
         }
 
         const expressionAttributeNames = properties.reduce((acc, property) => {
@@ -247,7 +247,11 @@ export abstract class AbstractService<T extends object> {
             [`:${String(hashKey)}`]: hashKeyValue,
         };
 
-        if (rangeKey && rangeKeyStartValue && rangeKeyEndValue) {
+        if (
+            rangeKey != undefined &&
+            rangeKeyStartValue != undefined &&
+            rangeKeyEndValue != undefined
+        ) {
             ExpressionAttributeNames = {
                 ...ExpressionAttributeNames,
                 [`#${String(rangeKey)}`]: rangeKey,

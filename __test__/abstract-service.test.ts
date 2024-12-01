@@ -186,6 +186,33 @@ describe("TestRangeTable", () => {
         expect(result).toEqual(testRangeModel);
     });
 
+    it("_save(): should save object with if range key is equal to 0", async () => {
+        const { testRangeModel } = setup();
+
+        testRangeModel.secondId = 0;
+        const result = await testRangeService.save(testRangeModel);
+
+        expect(result).toEqual(testRangeModel);
+    });
+
+    it("_save(): should error if range key is null", async () => {
+        const { testRangeModel } = setup();
+
+        //@ts-ignore
+        testRangeModel.secondId = null;
+
+        expect(testRangeService.save(testRangeModel)).rejects.toThrow();
+    });
+
+    it("_save(): should error if range key is undefined", async () => {
+        const { testRangeModel } = setup();
+
+        //@ts-ignore
+        testRangeModel.secondId = undefined;
+
+        expect(testRangeService.save(testRangeModel)).rejects.toThrow();
+    });
+
     it("_save(): should update object", async () => {
         const { testRangeModel } = setup();
 

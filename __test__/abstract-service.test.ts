@@ -10,7 +10,7 @@ import {
     TestRange,
     Test,
 } from "./setup";
-import { ServiceError } from "..";
+import { ServiceError } from "../src";
 
 beforeAll(async () => {
     await createTestTable();

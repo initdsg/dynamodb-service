@@ -51,6 +51,11 @@ export type DeleteOptions<H, R> = {
     rangeKeyValue?: R;
 };
 
+export type PaginateOptions = {
+    limit: number;
+    lastEvaluatedKey?: Record<string, any>;
+};
+
 export type AbstractServiceOptions = {
     dynamoDBClient?: DynamoDBClient;
 };
@@ -369,6 +374,27 @@ export abstract class AbstractService<T extends object> {
      */
     public async getAll(): Promise<T[]> {
         return await this._list({});
+    }
+
+    protected async _paginate({
+        limit,
+        lastEvaluatedKey,
+    }: PaginateOptions): Promise<{
+        items: T[];
+        lastEvaluatedKey?: Record<string, any>;
+    }> {
+        const scanCommandParams: ScanCommandInput = {
+            TableName: this.tableName,
+            Limit: limit,
+        };
+
+        const scanCommand = new ScanCommand(scanCommandParams);
+        scanCommand.input.ExclusiveStartKey = lastEvaluatedKey;
+
+        const { Items, LastEvaluatedKey } =
+            await this.dynamoDBClient.send(scanCommand);
+
+        return { items: Items as T[], lastEvaluatedKey: LastEvaluatedKey };
     }
 
     /**

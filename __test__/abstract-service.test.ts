@@ -11,6 +11,7 @@ import {
     Test,
 } from "./setup";
 import { ServiceError } from "../src";
+import { chunk } from "../src/utils";
 
 beforeAll(async () => {
     await createTestTable();
@@ -163,6 +164,43 @@ describe("TestTable", () => {
         expect(result.every((model) => model.name === testModel.name)).toEqual(
             true
         );
+    });
+
+    it("_paginate(): should paginate through items", async () => {
+        // fill with 200 items
+        for (let i = 0; i < 200; i++) {
+            const { testModel } = setup();
+            await testService.save(testModel);
+        }
+
+        const pageSize = 10;
+
+        let response = await testService.paginate(pageSize);
+        let lastEvaluatedKey = response.lastEvaluatedKey;
+        const items = response.items;
+
+        expect(items.length).toEqual(10);
+        expect(lastEvaluatedKey).toBeDefined();
+
+        while (lastEvaluatedKey) {
+            response = await testService.paginate(
+                pageSize,
+                response.lastEvaluatedKey
+            );
+
+            lastEvaluatedKey = response.lastEvaluatedKey;
+            items.push(...response.items);
+
+            // page ended
+            if (!lastEvaluatedKey) {
+                break;
+            }
+
+            expect(response.items.length).toBeGreaterThan(0);
+            expect(lastEvaluatedKey).toBeDefined();
+        }
+
+        expect(items.length).toBeGreaterThanOrEqual(200);
     });
 });
 

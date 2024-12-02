@@ -59,6 +59,13 @@ class TestService extends AbstractService<Test> {
             limit,
         });
     }
+
+    async paginate(limit: number, lastEvaluatedKey?: Record<string, any>) {
+        return await this._paginate({
+            lastEvaluatedKey,
+            limit,
+        });
+    }
 }
 
 export interface TestRange {

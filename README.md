@@ -146,6 +146,21 @@ await userService._delete({
 });
 ```
 
+#### Paginate Items
+
+```typescript
+// fetch first page
+const { items, lastEvaluatedKeys } = await userService._paginate({
+    limit: 10,
+});
+
+// fetch the next page
+await userService._paginate({
+    limit: 10,
+    lastEvaluatedKeys,
+});
+```
+
 ## Configuration
 
 You can provide your own DynamoDB client instance:
@@ -177,7 +192,8 @@ Base class that provides all DynamoDB operations. Generic type `T` represents th
 - `_batchGet(options: BatchGetOptions<T>): Promise<T[]>`
 - `_list(options: ListOptions): Promise<T[]>`
 - `getAll(): Promise<T[]>`
-- `_delete<H, R>(options: DeleteOptions<H, R>): Promise<void>`
+- `_delete(options: DeleteOptions<H, R>): Promise<void>`
+- `_paginate(options: PaginateOptions): Promise<{ items: T[], lastEvaluatedKey: Record<string, any> }>`
 
 ## License
 

@@ -376,6 +376,11 @@ export abstract class AbstractService<T extends object> {
         return await this._list({});
     }
 
+    /**
+     * Paginates items through a table. A limit must be specified to determine
+     * the page size. The `lastEvaluatedKey` can be used to fetch the next page.
+     * Omitting `lastEvaluatedKey` will fetch the first page.
+     */
     protected async _paginate({
         limit,
         lastEvaluatedKey,

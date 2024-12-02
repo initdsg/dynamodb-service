@@ -131,8 +131,8 @@ export abstract class AbstractService<T extends object> {
 
     /**
      * A more generic method to query a table. This method allows you to query
-     * a table based on the hash key and range key. This method will if range
-     * key is not provided for table with range key.
+     * a table based on the hash key and range key. This method will not fail if
+     * range key is not provided for table with range key.
      */
     async _query({
         index,
@@ -146,12 +146,12 @@ export abstract class AbstractService<T extends object> {
         const keys = {
             [hashKey as string]: hashKeyValue,
         };
-        if (rangeKey && rangeKeyValue) {
+        if (rangeKey != undefined && rangeKeyValue != undefined) {
             keys[rangeKey as string] = rangeKeyValue;
         }
 
         let KeyConditionExpression = `#${String(hashKey)} = :${String(hashKey)}`;
-        if (rangeKey && rangeKeyValue) {
+        if (rangeKey != undefined && rangeKeyValue != undefined) {
             KeyConditionExpression = `${KeyConditionExpression} and #${String(
                 rangeKey
             )} = :${String(rangeKey)}`;
@@ -165,7 +165,7 @@ export abstract class AbstractService<T extends object> {
             [`:${String(hashKey)}`]: hashKeyValue,
         };
 
-        if (rangeKey && rangeKeyValue) {
+        if (rangeKey != undefined && rangeKeyValue != undefined) {
             ExpressionAttributeNames = {
                 ...ExpressionAttributeNames,
                 [`#${String(rangeKey)}`]: rangeKey,
@@ -221,7 +221,11 @@ export abstract class AbstractService<T extends object> {
         const keys = {
             [hashKey as string]: hashKeyValue,
         };
-        if (rangeKey && rangeKeyStartValue && rangeKeyEndValue) {
+        if (
+            rangeKey != undefined &&
+            rangeKeyStartValue != undefined &&
+            rangeKeyEndValue != undefined
+        ) {
             keys[rangeKeyStartValue as string] = rangeKeyStartValue;
             keys[rangeKeyEndValue as string] = rangeKeyEndValue;
 
@@ -233,7 +237,7 @@ export abstract class AbstractService<T extends object> {
         }
 
         let KeyConditionExpression = `#${String(hashKey)} = :${String(hashKey)}`;
-        if (rangeKey && rangeKeyStartValue) {
+        if (rangeKey != undefined && rangeKeyStartValue != undefined) {
             KeyConditionExpression = `${KeyConditionExpression} and #${String(
                 rangeKey
             )} between :startValue and :endValue`;
@@ -327,7 +331,7 @@ export abstract class AbstractService<T extends object> {
                 [item.hashKey as string]: item.hashKeyValue,
             };
 
-            if (item.rangeKey && item.rangeKeyValue) {
+            if (item.rangeKey != undefined && item.rangeKeyValue != undefined) {
                 keys[item.rangeKey as string] = item.rangeKeyValue;
             }
 
@@ -439,7 +443,7 @@ export abstract class AbstractService<T extends object> {
         const keys: Record<string, H | R> = {
             [hashKey]: hashKeyValue,
         };
-        if (rangeKey && rangeKeyValue) {
+        if (rangeKey != undefined && rangeKeyValue != undefined) {
             keys[rangeKey] = rangeKeyValue;
         }
 

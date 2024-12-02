@@ -10,6 +10,7 @@ import {
     TestRange,
     Test,
 } from "./setup";
+import { ServiceError } from "..";
 
 beforeAll(async () => {
     await createTestTable();
@@ -248,6 +249,26 @@ describe("TestRangeTable", () => {
         ).resolves.toBeNull();
     });
 
+    it("_delete(): should delete object with range key equals to 0", async () => {
+        const { testRangeModel } = setup();
+        testRangeModel.secondId = 0;
+
+        await testRangeService.save(testRangeModel);
+
+        const result = await testRangeService.get(testRangeModel.id, 0);
+
+        expect(result).toEqual(testRangeModel);
+
+        await testRangeService.delete(
+            testRangeModel.id,
+            testRangeModel.secondId
+        );
+
+        expect(
+            testRangeService.get(testRangeModel.id, testRangeModel.secondId)
+        ).resolves.toBeNull();
+    });
+
     it("_get(): should get object with range key", async () => {
         const { testRangeModel } = setup();
         const testRangeModels: TestRange[] = [];
@@ -275,7 +296,11 @@ describe("TestRangeTable", () => {
 
         // fill with 200 items
         for (let i = 0; i < 200; i++) {
-            const model = { ...testRangeModel, id: faker.string.uuid() };
+            const model = {
+                ...testRangeModel,
+                id: faker.string.uuid(),
+                secondId: i,
+            };
             models.push(model);
 
             await testRangeService.save(model);
@@ -359,6 +384,46 @@ describe("TestRangeTable", () => {
         }
     });
 
+    it("_query(): should get objects with range key", async () => {
+        const { testRangeModel } = setup();
+        const testRangeModels: TestRange[] = [];
+
+        for (let i = 0; i < 10; i++) {
+            const obj = { ...testRangeModel, secondId: i };
+            testRangeModels.push(obj);
+            await testRangeService.save(obj);
+        }
+
+        const randomModel = faker.helpers.arrayElement(testRangeModels);
+        const results = await testRangeService.queryWithRangeKey(
+            randomModel.id,
+            randomModel.secondId
+        );
+
+        expect(results.length).toEqual(1);
+        expect(results[0]).toEqual(randomModel);
+    });
+
+    it("_query(): should get objects with range key equals to 0", async () => {
+        const { testRangeModel } = setup();
+        const testRangeModels: TestRange[] = [];
+
+        for (let i = 0; i < 10; i++) {
+            const obj = { ...testRangeModel, secondId: i };
+            testRangeModels.push(obj);
+            await testRangeService.save(obj);
+        }
+
+        const firstModel = testRangeModels[0];
+        const results = await testRangeService.queryWithRangeKey(
+            firstModel.id,
+            0
+        );
+
+        expect(results.length).toEqual(1);
+        expect(results[0]).toEqual(firstModel);
+    });
+
     it("_query(): should get objects with limit", async () => {
         const { testRangeModel } = setup();
         const testRangeModels: TestRange[] = [];
@@ -413,6 +478,57 @@ describe("TestRangeTable", () => {
 
             expect(result).toEqual(testRangeModel);
         }
+    });
+
+    it("_queryBetween(): should query between objects with start range key equals to 0", async () => {
+        const { testRangeModel } = setup();
+        const testRangeModels: TestRange[] = [];
+
+        for (let i = 0; i < 100; i++) {
+            const obj = { ...testRangeModel, secondId: i };
+            testRangeModels.push(obj);
+            await testRangeService.save(obj);
+        }
+
+        const min = 0;
+        const max = faker.number.int({ min: 80, max: 100 });
+        const results = await testRangeService.queryBetween(
+            testRangeModel.id,
+            min,
+            max
+        );
+
+        const selectedRangeModels = testRangeModels.slice(min, max + 1);
+        expect(results.length).toEqual(selectedRangeModels.length);
+
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            const testRangeModel = selectedRangeModels[i];
+
+            expect(result).toEqual(testRangeModel);
+        }
+    });
+
+    it("_queryBetween(): should fail to query between objects when start key > end key", async () => {
+        const { testRangeModel } = setup();
+        const testRangeModels: TestRange[] = [];
+
+        for (let i = 0; i < 100; i++) {
+            const obj = { ...testRangeModel, secondId: i };
+            testRangeModels.push(obj);
+            await testRangeService.save(obj);
+        }
+
+        const min = faker.number.int({ min: 80, max: 100 });
+        const max = faker.number.int({ min: 0, max: 20 });
+
+        expect(
+            testRangeService.queryBetween(testRangeModel.id, min, max)
+        ).rejects.toThrow(
+            new ServiceError(
+                "QueryBetween start value is greater than end value"
+            )
+        );
     });
 
     it("_list(): should find matching object", async () => {

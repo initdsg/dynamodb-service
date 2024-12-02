@@ -98,6 +98,15 @@ class TestRangeService extends AbstractService<TestRange> {
         });
     }
 
+    async queryWithRangeKey(id: string, secondId: number) {
+        return await this._query({
+            hashKey: "id",
+            hashKeyValue: id,
+            rangeKey: "secondId",
+            rangeKeyValue: secondId,
+        });
+    }
+
     async query(id: string, order?: "asc" | "dsc", limit?: number) {
         return await this._query({
             hashKey: "id",

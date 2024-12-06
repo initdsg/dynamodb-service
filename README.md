@@ -35,6 +35,56 @@ interface User {
 
 class UserService extends AbstractService<User> {
     tableName = "Users";
+
+    save(user: User) {
+        await userService._save({
+            hashKey: "userId",
+            obj: user,
+        });
+    }
+
+    get(id: string) {
+        return this._get({
+            hashKey: "userId",
+            hashKeyValue: "123"
+        })
+    }
+
+    getWithRange(id: string, createAt: number) {
+        return this._get({
+            hashKey: "userId",
+            hashKeyValue: id,
+            rangeKey: "createdAt",
+            rangeKeyValue: createdAt,
+        })
+    }
+
+    query(opt: GetOptions) {
+        return this._query(opts);
+    }
+
+    queryBetween(opt: GetOptions & { rangeKeyStartValue: number, rangeKeyEndValue: number }) {
+        return this._queryBetween(opts);
+    }
+
+    batchGet(items: BatchGetOptions) {
+        return this._batchGet(items);
+    }
+
+    list(opts: ListOptions) {
+        return this._list(opts);
+    }
+
+    delete(id: string) {
+        return this._delete({
+            hashKey: "userId",
+            hashKeyValue: id
+        });
+    }
+
+    paginate(opts: PaginateOptions) {
+        return this._paginate(opts);
+    }
 }
 ```
 
@@ -45,14 +95,11 @@ class UserService extends AbstractService<User> {
 ```typescript
 const userService = new UserService();
 
-await userService._save({
-    hashKey: "userId",
-    obj: {
-        userId: "123",
-        email: "john@example.com",
-        name: "John Doe",
-        createdAt: Date.now()
-    }
+await userService.save({
+    userId: "123",
+    email: "john@example.com",
+    name: "John Doe",
+    createdAt: Date.now()
 });
 ```
 
@@ -60,38 +107,30 @@ await userService._save({
 
 ```typescript
 // Get by hash key
-const user = await userService._get({
-    hashKey: "userId",
-    hashKeyValue: "123"
-});
+const user = await userService.get("123");
 
 // Get by hash key and range key
-const user = await userService._get({
-    hashKey: "userId",
-    hashKeyValue: "123",
-    rangeKey: "createdAt",
-    rangeKeyValue: 1234567890
-});
+const user = await userService.getWithRange("123", 1234567890);
 ```
 
 #### Query Items
 
 ```typescript
 // Basic query
-const users = await userService._query({
+const users = await userService.query({
     hashKey: "userId",
     hashKeyValue: "123"
 });
 
 // Query with index
-const users = await userService._query({
+const users = await userService.query({
     index: "email-index",
     hashKey: "email",
     hashKeyValue: "john@example.com"
 });
 
 // Query with ordering and limit
-const users = await userService._query({
+const users = await userService.query({
     hashKey: "userId",
     hashKeyValue: "123",
     order: "dsc",
@@ -102,7 +141,7 @@ const users = await userService._query({
 #### Query Between Range Values
 
 ```typescript
-const users = await userService._queryBetween({
+const users = await userService.queryBetween({
     hashKey: "userId",
     hashKeyValue: "123",
     rangeKey: "createdAt",
@@ -114,7 +153,7 @@ const users = await userService._queryBetween({
 #### Batch Get Items
 
 ```typescript
-const users = await userService._batchGet({
+const users = await userService.batchGet({
     items: [
         { hashKey: "userId", hashKeyValue: "123" },
         { hashKey: "userId", hashKeyValue: "456" }
@@ -129,7 +168,7 @@ const users = await userService._batchGet({
 const allUsers = await userService.getAll();
 
 // List with filters
-const filteredUsers = await userService._list({
+const filteredUsers = await userService.list({
     filters: {
         status: "active"
     },
@@ -140,22 +179,19 @@ const filteredUsers = await userService._list({
 #### Delete an Item
 
 ```typescript
-await userService._delete({
-    hashKey: "userId",
-    hashKeyValue: "123"
-});
+await userService.delete("userId");
 ```
 
 #### Paginate Items
 
 ```typescript
 // fetch first page
-const { items, lastEvaluatedKeys } = await userService._paginate({
+const { items, lastEvaluatedKeys } = await userService.paginate({
     limit: 10,
 });
 
 // fetch the next page
-await userService._paginate({
+await userService.paginate({
     limit: 10,
     lastEvaluatedKeys,
 });

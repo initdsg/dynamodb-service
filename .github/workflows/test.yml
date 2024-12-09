@@ -1,0 +1,51 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Start DynamoDB Local
+        run: |
+          docker run -d --name dynamodb-local -p 8000:8000 amazon/dynamodb-local
+
+      - name: Wait for DynamoDB to Start
+        run: |
+          for i in {1..15}; do
+            if curl -s http://localhost:8000 > /dev/null; then
+              echo "DynamoDB is up and running!"
+              exit 0
+            fi
+            echo "Waiting for DynamoDB to start... ($i)"
+            sleep 2
+          done
+
+          echo "DynamoDB failed to start in time." >&2
+          exit 1
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run tests
+        timeout-minutes: 2
+        run: yarn test

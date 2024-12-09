@@ -234,3 +234,7 @@ Base class that provides all DynamoDB operations. Generic type `T` represents th
 ## License
 
 MIT
+
+## Related article
+
+https://medium.com/@initd.sg/dynamodb-made-easy-simplifying-dynamodb-interactions-using-initd-sg-dynamodb-service-0a53a1a00c3c
